@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Type Ahead</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <form class="search-form">
+    <input type="text" class="search" placeholder="City or State">
+    <ul class="suggestions">
+      <li>Filter for a name</li>
+      <li>or an e-mail</li>
+    </ul>
+  </form>
+<script>
+
+const endpoint = 'https://api.myjson.com/bins/ia83r';
+
+const ids = [];
+//fetch does not know what data it is -
+//blob must be converted from raw data to json
+fetch(endpoint)
+    .then(blob => blob.json())
+    .then(data => ids.push(...data)) //es6 spread
+
+console.log(ids);
+function findMatches(wordToMatch, ids){
+    return ids.filter( id =>  {
+        const regex = new RegExp(wordToMatch, 'gi');
+        return id.name.match(regex) || id.email.match(regex)
+    });
+}
+
+function displayMatches(){
+    const matchArray = findMatches(this.value, ids);
+    const html = matchArray.map( id => {
+        const regex = new RegExp(this.value, 'gi');
+        const idName = id.name.replace(regex, `<span class="hl">${this.value}</span>`)
+        const idEmail = id.email.replace(regex, `<span class="hl">${this.value}</span>`)
+        return `
+                <li>
+                    <span class="name"> ${idName}  </span>
+                    <span class="email"> ${idEmail} </span>
+                </li>
+                    `;
+    }).join('');
+    suggestions.innerHTML = html;
+}
+
+const searchInput = document.querySelector('.search');
+const suggestions = document.querySelector('.suggestions');
+
+searchInput.addEventListener('change', displayMatches);
+searchInput.addEventListener('keyup', displayMatches);
+
+</script>
+  </body>
+</html>
